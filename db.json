@@ -20,6 +20,20 @@
       "phone": "11977777777",
       "pin": "2222",
       "isAdmin": false
+    },
+    {
+      "id": "user-1782743692374",
+      "name": "WAGNER TEIXEIRA",
+      "phone": "21975151937",
+      "pin": "1234",
+      "isAdmin": false
+    },
+    {
+      "id": "user-1782746142573",
+      "name": "Danielle Maria",
+      "phone": "21975151900",
+      "pin": "4321",
+      "isAdmin": false
     }
   ],
   "matches": [
@@ -43,7 +57,10 @@
       "placar1tB": 0,
       "placarFinalA": 2,
       "placarFinalB": 1,
-      "autoresGols": ["Neymar", "Vinicius Jr"],
+      "autoresGols": [
+        "Neymar",
+        "Vinicius Jr"
+      ],
       "craque": "Neymar",
       "min1Gol": 15,
       "escanteios1t": 4,
@@ -65,7 +82,9 @@
       "placar1tB": 0,
       "placarFinalA": 1,
       "placarFinalB": 0,
-      "autoresGols": ["Vinicius Jr"],
+      "autoresGols": [
+        "Vinicius Jr"
+      ],
       "craque": "Vinicius Jr",
       "min1Gol": 30,
       "escanteios1t": 2,

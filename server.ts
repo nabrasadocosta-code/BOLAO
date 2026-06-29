@@ -11,10 +11,7 @@ import { createServer as createViteServer } from "vite";
 import { User, Match, Bet, MatchResults, PointsBreakdown, RankingEntry } from "./src/types.js";
 import { calculatePoints, sumPoints, calculateRankingsAndPrizes } from "./src/utils.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const DB_FILE = path.join(__dirname, "db.json");
+const DB_FILE = path.join(process.cwd(), "db.json");
 
 // Helper para ler o banco
 function readDb(): { users: User[]; matches: Match[]; bets: Bet[] } {
