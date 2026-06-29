@@ -58,6 +58,7 @@ export default function LoginRegister({ onLoginSuccess }: LoginRegisterProps) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
@@ -67,7 +68,10 @@ export default function LoginRegister({ onLoginSuccess }: LoginRegisterProps) {
         data = JSON.parse(text);
       } catch (parseErr) {
         console.error("Erro ao converter resposta para JSON:", text);
-        throw new Error("Resposta inválida do servidor. Por favor, verifique os dados e tente novamente.");
+        if (text.trim().startsWith("<") || text.includes("<!DOCTYPE") || text.includes("Action required")) {
+          throw new Error("O navegador bloqueou os cookies de segurança no modo incorporado. Por favor, clique no botão 'Abrir em nova aba' (ícone no canto superior direito) para cadastrar ou entrar sem restrições!");
+        }
+        throw new Error("Resposta inválida do servidor. Por favor, clique no botão 'Abrir em nova aba' no canto superior direito do site para acessar.");
       }
 
       if (!response.ok || data.success === false) {

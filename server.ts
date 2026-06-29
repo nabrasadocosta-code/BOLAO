@@ -5,35 +5,76 @@
 
 import express from "express";
 import path from "path";
-import fs from "fs";
 import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import { User, Match, Bet, MatchResults, PointsBreakdown, RankingEntry } from "./src/types.js";
 import { calculatePoints, sumPoints, calculateRankingsAndPrizes } from "./src/utils.js";
 
-const DB_FILE = path.join(process.cwd(), "db.json");
+// Import Firebase Client SDK
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, doc, getDocs, setDoc, getDoc, deleteDoc, query, where } from 'firebase/firestore';
+import fs from 'fs';
 
-// Helper para ler o banco
-function readDb(): { users: User[]; matches: Match[]; bets: Bet[] } {
+// Inicializar Firebase
+let firebaseConfig: any;
+try {
+  firebaseConfig = JSON.parse(fs.readFileSync('./firebase-applet-config.json', 'utf8'));
+} catch (e) {
+  firebaseConfig = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    firestoreDatabaseId: process.env.FIREBASE_DATABASE_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  };
+}
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
+
+// Helper para ler todos os dados (simulando o banco em memória para manter a lógica simples do backend, 
+// embora em produção o ideal seja fazer queries específicas. Vamos manter a compatibilidade com a lógica existente)
+async function readDb(): Promise<{ users: User[]; matches: Match[]; bets: Bet[] }> {
   try {
-    if (!fs.existsSync(DB_FILE)) {
-      return { users: [], matches: [], bets: [] };
+    const usersSnapshot = await getDocs(collection(db, 'users'));
+    const matchesSnapshot = await getDocs(collection(db, 'matches'));
+    const betsSnapshot = await getDocs(collection(db, 'bets'));
+    
+    return {
+      users: usersSnapshot.docs.map(d => d.data() as User),
+      matches: matchesSnapshot.docs.map(d => d.data() as Match),
+      bets: betsSnapshot.docs.map(d => d.data() as Bet),
+    };
+  } catch (error: any) {
+    console.error("Erro ao ler banco de dados do Firestore:", error);
+    // Se der erro de permissão (ex: regras não configuradas), retorna vazio para não quebrar tudo
+    if (error?.code === 'permission-denied') {
+      console.error("AVISO: Permissão negada no Firestore. Por favor, configure as regras de segurança no console do Firebase.");
     }
-    const data = fs.readFileSync(DB_FILE, "utf-8");
-    return JSON.parse(data);
-  } catch (error) {
-    console.error("Erro ao ler banco de dados:", error);
     return { users: [], matches: [], bets: [] };
   }
 }
 
-// Helper para salvar o banco
-function writeDb(data: { users: User[]; matches: Match[]; bets: Bet[] }) {
-  try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
-  } catch (error) {
-    console.error("Erro ao salvar no banco de dados:", error);
-  }
+// Helper para salvar todos os dados no Firestore (simulando a escrita do arquivo inteiro)
+// NOTA: Para performance e concorrência, o ideal seria atualizar apenas os documentos necessários,
+// mas para manter a compatibilidade exata com as funções síncronas anteriores, estamos persistindo assim.
+// Vamos criar funções específicas para atualizar apenas o necessário nas rotas.
+async function writeUser(user: User) {
+  await setDoc(doc(db, 'users', user.id), user);
+}
+async function writeMatch(match: Match) {
+  await setDoc(doc(db, 'matches', match.id), match);
+}
+async function writeBet(bet: Bet) {
+  await setDoc(doc(db, 'bets', bet.id), bet);
+}
+async function removeMatch(matchId: string) {
+  await deleteDoc(doc(db, 'matches', matchId));
+}
+async function removeBet(betId: string) {
+  await deleteDoc(doc(db, 'bets', betId));
 }
 
 async function startServer() {
@@ -54,14 +95,17 @@ async function startServer() {
   });
 
   // Middleware de Autenticação Customizado usando Headers (Authorization: Bearer <userId>)
-  app.use((req: any, res, next) => {
+  app.use(async (req: any, res, next) => {
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith("Bearer ")) {
       const userId = authHeader.substring(7);
-      const db = readDb();
-      const user = db.users.find((u) => u.id === userId);
-      if (user) {
-        req.user = user;
+      try {
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (userDoc.exists()) {
+          req.user = userDoc.data() as User;
+        }
+      } catch (err) {
+        console.error("Auth middleware db error:", err);
       }
     }
     next();
@@ -86,7 +130,7 @@ async function startServer() {
   // --- API ROUTES ---
 
   // Registro de Usuário
-  app.post("/api/auth/register", (req, res) => {
+  app.post("/api/auth/register", async (req, res) => {
     const { name, phone, pin } = req.body;
 
     if (!name || !phone || !pin) {
@@ -100,15 +144,15 @@ async function startServer() {
       return res.status(200).json({ success: false, error: "O PIN deve conter exatamente 4 números." });
     }
 
-    const db = readDb();
+    const database = await readDb();
     
     // Validar se já existe um participante com esse mesmo nome
-    const nameExists = db.users.some((u) => u.name.trim().toLowerCase() === name.trim().toLowerCase());
+    const nameExists = database.users.some((u) => u.name.trim().toLowerCase() === name.trim().toLowerCase());
     if (nameExists) {
       return res.status(200).json({ success: false, error: "Já existe um participante cadastrado com este nome completo. Adicione um sobrenome ou outra identificação para diferenciar." });
     }
 
-    const existing = db.users.find((u) => u.phone.replace(/\D/g, "") === cleanPhone);
+    const existing = database.users.find((u) => u.phone.replace(/\D/g, "") === cleanPhone);
 
     if (existing) {
       return res.status(200).json({ success: false, error: "Já existe uma conta registrada com este número de telefone." });
@@ -122,8 +166,11 @@ async function startServer() {
       isAdmin: false, // Por padrão, usuários normais
     };
 
-    db.users.push(newUser);
-    writeDb(db);
+    try {
+      await writeUser(newUser);
+    } catch (e: any) {
+      return res.status(500).json({ success: false, error: "Erro interno no banco de dados. " + (e.message || "") });
+    }
 
     res.json({
       success: true,
@@ -137,7 +184,7 @@ async function startServer() {
   });
 
   // Login de Usuário
-  app.post("/api/auth/login", (req, res) => {
+  app.post("/api/auth/login", async (req, res) => {
     const { phone, pin } = req.body;
 
     if (!phone || !pin) {
@@ -147,8 +194,8 @@ async function startServer() {
     const cleanPhone = phone.replace(/\D/g, "");
     const cleanPin = pin.replace(/\D/g, "");
 
-    const db = readDb();
-    const user = db.users.find(
+    const database = await readDb();
+    const user = database.users.find(
       (u) => u.phone.replace(/\D/g, "") === cleanPhone && u.pin === cleanPin
     );
 
@@ -180,34 +227,34 @@ async function startServer() {
   });
 
   // Listar partidas
-  app.get("/api/matches", (req, res) => {
-    const db = readDb();
-    res.json({ matches: db.matches });
+  app.get("/api/matches", async (req, res) => {
+    const database = await readDb();
+    res.json({ matches: database.matches });
   });
 
   // Criar ou atualizar partida (Admin)
-  app.post("/api/matches", requireAdmin, (req, res) => {
+  app.post("/api/matches", requireAdmin, async (req, res) => {
     const { id, teamA, teamB, matchDate, status } = req.body;
 
     if (!teamA || !teamB || !matchDate) {
       return res.status(400).json({ error: "Times e data da partida são obrigatórios." });
     }
 
-    const db = readDb();
+    const database = await readDb();
 
     if (id) {
       // Atualiza partida existente
-      const idx = db.matches.findIndex((m) => m.id === id);
+      const idx = database.matches.findIndex((m) => m.id === id);
       if (idx !== -1) {
-        db.matches[idx] = {
-          ...db.matches[idx],
+        const updatedMatch = {
+          ...database.matches[idx],
           teamA: teamA.trim(),
           teamB: teamB.trim(),
           matchDate,
-          status: status || db.matches[idx].status,
+          status: status || database.matches[idx].status,
         };
-        writeDb(db);
-        return res.json({ success: true, match: db.matches[idx] });
+        await writeMatch(updatedMatch);
+        return res.json({ success: true, match: updatedMatch });
       }
       return res.status(404).json({ error: "Partida não encontrada para atualização." });
     } else {
@@ -220,32 +267,36 @@ async function startServer() {
         status: "open",
         realResults: null,
       };
-      db.matches.push(newMatch);
-      writeDb(db);
+      await writeMatch(newMatch);
       return res.json({ success: true, match: newMatch });
     }
   });
 
   // Deletar partida (Admin)
-  app.delete("/api/matches/:id", requireAdmin, (req, res) => {
+  app.delete("/api/matches/:id", requireAdmin, async (req, res) => {
     const { id } = req.params;
-    const db = readDb();
-    db.matches = db.matches.filter((m) => m.id !== id);
-    db.bets = db.bets.filter((b) => b.matchId !== id); // Remove palpites correspondentes
-    writeDb(db);
+    const database = await readDb();
+    
+    await removeMatch(id);
+    
+    const betsToRemove = database.bets.filter((b) => b.matchId === id);
+    for (const bet of betsToRemove) {
+      await removeBet(bet.id);
+    }
+    
     res.json({ success: true });
   });
 
   // Obter palpite do usuário logado para uma partida
-  app.get("/api/bets/my/:matchId", requireAuth, (req: any, res) => {
+  app.get("/api/bets/my/:matchId", requireAuth, async (req: any, res) => {
     const { matchId } = req.params;
-    const db = readDb();
-    const bet = db.bets.find((b) => b.userId === req.user.id && b.matchId === matchId);
+    const database = await readDb();
+    const bet = database.bets.find((b) => b.userId === req.user.id && b.matchId === matchId);
     res.json({ bet: bet || null });
   });
 
   // Criar ou atualizar palpite
-  app.post("/api/bets", requireAuth, (req: any, res) => {
+  app.post("/api/bets", requireAuth, async (req: any, res) => {
     const {
       matchId,
       placar1tA,
@@ -268,15 +319,14 @@ async function startServer() {
       return res.status(400).json({ error: "ID da partida é obrigatório." });
     }
 
-    const db = readDb();
-    const match = db.matches.find((m) => m.id === matchId);
+    const database = await readDb();
+    const match = database.matches.find((m) => m.id === matchId);
 
     if (!match) {
       return res.status(404).json({ error: "Partida não encontrada." });
     }
 
     // Regras de bloqueio de palpites:
-    // O sistema deve fechar às 14:00 (ou se o status for in_progress/finished)
     const now = new Date();
     const limitDate = new Date(match.matchDate);
     const isPastLimit = now > limitDate;
@@ -288,7 +338,7 @@ async function startServer() {
     }
 
     // Encontra se já tem palpite
-    const existingBetIndex = db.bets.findIndex(
+    const existingBetIndex = database.bets.findIndex(
       (b) => b.userId === req.user.id && b.matchId === matchId
     );
 
@@ -322,38 +372,39 @@ async function startServer() {
       totalPoints: 0,
     };
 
-    db.bets.push(betData);
-
-    writeDb(db);
+    await writeBet(betData);
     res.json({ success: true, bet: betData });
   });
 
   // Listar todos os palpites para administração (Admin)
-  app.get("/api/bets/all", requireAdmin, (req, res) => {
-    const db = readDb();
-    res.json({ bets: db.bets });
+  app.get("/api/bets/all", requireAdmin, async (req, res) => {
+    const database = await readDb();
+    res.json({ bets: database.bets });
   });
 
   // Atualizar status de pagamento de um palpite (Admin)
-  app.post("/api/bets/:id/pay", requireAdmin, (req, res) => {
+  app.post("/api/bets/:id/pay", requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { isPaid } = req.body;
 
-    const db = readDb();
-    const idx = db.bets.findIndex((b) => b.id === id);
+    const database = await readDb();
+    const idx = database.bets.findIndex((b) => b.id === id);
 
     if (idx === -1) {
       return res.status(404).json({ error: "Palpite não encontrado." });
     }
 
-    db.bets[idx].isPaid = Boolean(isPaid);
-    writeDb(db);
+    const updatedBet = {
+      ...database.bets[idx],
+      isPaid: Boolean(isPaid)
+    };
+    await writeBet(updatedBet);
 
-    res.json({ success: true, bet: db.bets[idx] });
+    res.json({ success: true, bet: updatedBet });
   });
 
   // Salvar resultados oficiais da partida e rodar o cálculo de pontos (Admin)
-  app.post("/api/matches/:id/results", requireAdmin, (req, res) => {
+  app.post("/api/matches/:id/results", requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { realResults } = req.body;
 
@@ -361,8 +412,8 @@ async function startServer() {
       return res.status(400).json({ error: "Resultados oficiais são necessários." });
     }
 
-    const db = readDb();
-    const matchIdx = db.matches.findIndex((m) => m.id === id);
+    const database = await readDb();
+    const matchIdx = database.matches.findIndex((m) => m.id === id);
 
     if (matchIdx === -1) {
       return res.status(404).json({ error: "Partida não encontrada." });
@@ -386,56 +437,70 @@ async function startServer() {
     };
 
     // Atualiza partida
-    db.matches[matchIdx].realResults = typedResults;
-    db.matches[matchIdx].status = "finished";
+    const updatedMatch = {
+      ...database.matches[matchIdx],
+      realResults: typedResults,
+      status: "finished" as const
+    };
+    await writeMatch(updatedMatch);
 
     // Recalcula pontos de TODOS os palpites desta partida
-    db.bets.forEach((bet) => {
+    for (const bet of database.bets) {
       if (bet.matchId === id) {
         const breakdown = calculatePoints(bet, typedResults);
-        bet.pointsBreakdown = breakdown;
-        bet.totalPoints = sumPoints(breakdown);
+        const updatedBet = {
+          ...bet,
+          pointsBreakdown: breakdown,
+          totalPoints: sumPoints(breakdown)
+        };
+        await writeBet(updatedBet);
       }
-    });
+    }
 
-    writeDb(db);
-    res.json({ success: true, match: db.matches[matchIdx] });
+    res.json({ success: true, match: updatedMatch });
   });
 
   // Resetar resultados oficiais e voltar partida para "open" ou "in_progress" (Admin)
-  app.post("/api/matches/:id/reset", requireAdmin, (req, res) => {
+  app.post("/api/matches/:id/reset", requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    const db = readDb();
-    const matchIdx = db.matches.findIndex((m) => m.id === id);
+    const database = await readDb();
+    const matchIdx = database.matches.findIndex((m) => m.id === id);
 
     if (matchIdx === -1) {
       return res.status(404).json({ error: "Partida não encontrada." });
     }
 
-    db.matches[matchIdx].realResults = null;
-    db.matches[matchIdx].status = status || "open";
+    const updatedMatch = {
+      ...database.matches[matchIdx],
+      realResults: null,
+      status: status || "open"
+    };
+    await writeMatch(updatedMatch);
 
     // Reseta pontos de palpites desta partida
-    db.bets.forEach((bet) => {
+    for (const bet of database.bets) {
       if (bet.matchId === id) {
-        bet.pointsBreakdown = null;
-        bet.totalPoints = 0;
+        const updatedBet = {
+          ...bet,
+          pointsBreakdown: null,
+          totalPoints: 0
+        };
+        await writeBet(updatedBet);
       }
-    });
+    }
 
-    writeDb(db);
-    res.json({ success: true, match: db.matches[matchIdx] });
+    res.json({ success: true, match: updatedMatch });
   });
 
   // Obter ranking e simulação de prêmios ao vivo
-  app.get("/api/ranking/:matchId", (req, res) => {
+  app.get("/api/ranking/:matchId", async (req, res) => {
     const { matchId } = req.params;
-    const db = readDb();
+    const database = await readDb();
 
     // Filtra palpites dessa partida
-    const matchBets = db.bets.filter((b) => b.matchId === matchId);
+    const matchBets = database.bets.filter((b) => b.matchId === matchId);
 
     // Quantidade de pagantes (isPaid = true)
     const paidBets = matchBets.filter((b) => b.isPaid);
