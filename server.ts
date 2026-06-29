@@ -42,6 +42,17 @@ async function startServer() {
 
   app.use(express.json());
 
+  // Logging middleware
+  app.use((req, res, next) => {
+    console.log(`[API REQUEST] ${req.method} ${req.url} - Body:`, JSON.stringify(req.body));
+    const oldSend = res.send;
+    res.send = function (data) {
+      console.log(`[API RESPONSE] ${req.method} ${req.url} - Status: ${res.statusCode} - Response:`, typeof data === 'string' ? data.substring(0, 200) : data);
+      return oldSend.apply(res, arguments as any);
+    };
+    next();
+  });
+
   // Middleware de Autenticação Customizado usando Headers (Authorization: Bearer <userId>)
   app.use((req: any, res, next) => {
     const authHeader = req.headers.authorization;

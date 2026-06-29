@@ -34,6 +34,13 @@
       "phone": "21975151900",
       "pin": "4321",
       "isAdmin": false
+    },
+    {
+      "id": "user-1782746460520",
+      "name": "WAGNER",
+      "phone": "22992040941",
+      "pin": "1234",
+      "isAdmin": false
     }
   ],
   "matches": [
