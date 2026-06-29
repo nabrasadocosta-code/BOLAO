@@ -464,6 +464,25 @@ export default function Dashboard({ user, matches, selectedMatch, setSelectedMat
                   <span className="text-xs font-black text-zinc-300 uppercase truncate max-w-[100px] text-right">{selectedMatch.teamB}</span>
                 </div>
               </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  disabled={locked}
+                  onClick={handleSaveBet}
+                  className="flex-1 py-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-white font-bold text-[11px] uppercase tracking-wider rounded-lg transition-all"
+                >
+                  Inserir Palpite
+                </button>
+                <button
+                  type="button"
+                  disabled={locked}
+                  onClick={handleSaveBet}
+                  className="flex-1 py-2 bg-yellow-500 hover:bg-yellow-400 disabled:bg-zinc-800 disabled:text-zinc-600 text-slate-950 font-black text-[11px] uppercase tracking-wider rounded-lg transition-all"
+                >
+                  Salvar
+                </button>
+              </div>
             </div>
 
              {/* CARD 2: GOLS E CRAQUE */}
@@ -630,9 +649,28 @@ export default function Dashboard({ user, matches, selectedMatch, setSelectedMat
                    value={craque}
                    onChange={(e) => setCraque(e.target.value)}
                    placeholder="Ex: Neymar"
-                   className="block w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-bold text-xs placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                 />
-               </div>
+                    className="block w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-bold text-xs placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-2 border-t border-slate-800">
+                  <button
+                    type="button"
+                    disabled={locked}
+                    onClick={handleSaveBet}
+                    className="flex-1 py-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-white font-bold text-[11px] uppercase tracking-wider rounded-lg transition-all"
+                  >
+                    Inserir Palpite
+                  </button>
+                  <button
+                    type="button"
+                    disabled={locked}
+                    onClick={handleSaveBet}
+                    className="flex-1 py-2 bg-yellow-500 hover:bg-yellow-400 disabled:bg-zinc-800 disabled:text-zinc-600 text-slate-950 font-black text-[11px] uppercase tracking-wider rounded-lg transition-all"
+                  >
+                    Salvar
+                  </button>
+                </div>
              </div>
 
             {/* CARD 3: ESTATÍSTICAS AVANÇADAS */}
@@ -701,27 +739,27 @@ export default function Dashboard({ user, matches, selectedMatch, setSelectedMat
                 <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-2">
                   <span className="block text-[9px] font-black text-yellow-400 uppercase tracking-widest">1º Tempo</span>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2.5 h-3.5 bg-yellow-450 rounded-sm"></div>
+                    <div className="space-y-1">
+                      <span className="block text-[9px] font-black text-yellow-500 uppercase tracking-wider text-center">🟨 Amarelos</span>
                       <input
                         type="number"
                         min="0"
                         disabled={locked}
                         value={cartoesAmarelos1t}
                         onChange={(e) => setCartoesAmarelos1t(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black"
+                        className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black focus:outline-none focus:ring-1 focus:ring-yellow-500"
                         title="Amarelos"
                       />
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2.5 h-3.5 bg-red-650 rounded-sm"></div>
+                    <div className="space-y-1">
+                      <span className="block text-[9px] font-black text-red-500 uppercase tracking-wider text-center">🟥 Vermelhos</span>
                       <input
                         type="number"
                         min="0"
                         disabled={locked}
                         value={cartoesVermelhos1t}
                         onChange={(e) => setCartoesVermelhos1t(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black"
+                        className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black focus:outline-none focus:ring-1 focus:ring-red-500"
                         title="Vermelhos"
                       />
                     </div>
@@ -732,32 +770,51 @@ export default function Dashboard({ user, matches, selectedMatch, setSelectedMat
                 <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-2">
                   <span className="block text-[9px] font-black text-yellow-400 uppercase tracking-widest">2º Tempo</span>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2.5 h-3.5 bg-yellow-450 rounded-sm"></div>
+                    <div className="space-y-1">
+                      <span className="block text-[9px] font-black text-yellow-500 uppercase tracking-wider text-center">🟨 Amarelos</span>
                       <input
                         type="number"
                         min="0"
                         disabled={locked}
                         value={cartoesAmarelos2t}
                         onChange={(e) => setCartoesAmarelos2t(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black"
+                        className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black focus:outline-none focus:ring-1 focus:ring-yellow-500"
                         title="Amarelos"
                       />
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2.5 h-3.5 bg-red-650 rounded-sm"></div>
+                    <div className="space-y-1">
+                      <span className="block text-[9px] font-black text-red-500 uppercase tracking-wider text-center">🟥 Vermelhos</span>
                       <input
                         type="number"
                         min="0"
                         disabled={locked}
                         value={cartoesVermelhos2t}
                         onChange={(e) => setCartoesVermelhos2t(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black"
+                        className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black focus:outline-none focus:ring-1 focus:ring-red-500"
                         title="Vermelhos"
                       />
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  disabled={locked}
+                  onClick={handleSaveBet}
+                  className="flex-1 py-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-white font-bold text-[11px] uppercase tracking-wider rounded-lg transition-all"
+                >
+                  Inserir Palpite
+                </button>
+                <button
+                  type="button"
+                  disabled={locked}
+                  onClick={handleSaveBet}
+                  className="flex-1 py-2 bg-yellow-500 hover:bg-yellow-400 disabled:bg-zinc-800 disabled:text-zinc-600 text-slate-950 font-black text-[11px] uppercase tracking-wider rounded-lg transition-all"
+                >
+                  Salvar
+                </button>
               </div>
             </div>
 

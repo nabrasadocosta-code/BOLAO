@@ -264,7 +264,17 @@ export default function RankingView({ selectedMatch, user }: RankingViewProps) {
                           </div>
                           <div>
                             <span className="text-zinc-500 block uppercase text-[8px] tracking-widest">Gols Previstos:</span>
-                            <span className="text-zinc-200 text-[10px]">{(userBet.autoresGols || []).join(", ") || "Nenhum"}</span>
+                            <span className="text-zinc-200 text-[10px] space-y-0.5 block">
+                              {userBet.goleadores && userBet.goleadores.length > 0 ? (
+                                userBet.goleadores.map((g: any, i: number) => (
+                                  <span key={i} className="block">
+                                    ⚽ {g.player} ({g.goals} gol{g.goals > 1 ? 's' : ''}) - Time {g.team}
+                                  </span>
+                                ))
+                              ) : (
+                                (userBet.autoresGols || []).join(", ") || "Nenhum"
+                              )}
+                            </span>
                           </div>
                           <div>
                             <span className="text-zinc-500 block uppercase text-[8px] tracking-widest">Craque:</span>

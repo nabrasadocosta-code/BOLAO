@@ -733,45 +733,61 @@ export default function AdminPanel({ user, matches, selectedMatch, onRefreshMatc
               </div>
 
               {/* Cartões Oficiais */}
-              <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
-                <span className="block text-[10px] font-black text-yellow-400 uppercase tracking-widest">Cartões Súmula Real</span>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <span className="block text-[9px] font-black text-zinc-500 uppercase tracking-wider">1º Tempo</span>
-                    <div className="flex gap-1.5">
-                      <input
-                        type="number"
-                        placeholder="Amarelos"
-                        value={cartoesAmarelos1t}
-                        onChange={(e) => setCartoesAmarelos1t(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Vermelhos"
-                        value={cartoesVermelhos1t}
-                        onChange={(e) => setCartoesVermelhos1t(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black"
-                      />
+              <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-3">
+                <span className="block text-[10px] font-black text-yellow-400 uppercase tracking-widest border-b border-slate-800 pb-1">Cartões Súmula Real</span>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  {/* 1T */}
+                  <div className="space-y-2">
+                    <span className="block text-[9px] font-black text-zinc-300 uppercase tracking-wider text-center bg-slate-900 py-1 rounded">1º Tempo</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <span className="block text-[8px] font-bold text-yellow-500 text-center uppercase">🟨 Amarelos</span>
+                        <input
+                          type="number"
+                          placeholder="Amarelos"
+                          value={cartoesAmarelos1t}
+                          onChange={(e) => setCartoesAmarelos1t(Math.max(0, parseInt(e.target.value) || 0))}
+                          className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black focus:outline-none focus:ring-1 focus:ring-yellow-500"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="block text-[8px] font-bold text-red-500 text-center uppercase">🟥 Vermelhos</span>
+                        <input
+                          type="number"
+                          placeholder="Vermelhos"
+                          value={cartoesVermelhos1t}
+                          onChange={(e) => setCartoesVermelhos1t(Math.max(0, parseInt(e.target.value) || 0))}
+                          className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black focus:outline-none focus:ring-1 focus:ring-red-500"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <span className="block text-[9px] font-black text-zinc-500 uppercase tracking-wider">2º Tempo</span>
-                    <div className="flex gap-1.5">
-                      <input
-                        type="number"
-                        placeholder="Amarelos"
-                        value={cartoesAmarelos2t}
-                        onChange={(e) => setCartoesAmarelos2t(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Vermelhos"
-                        value={cartoesVermelhos2t}
-                        onChange={(e) => setCartoesVermelhos2t(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black"
-                      />
+
+                  {/* 2T */}
+                  <div className="space-y-2">
+                    <span className="block text-[9px] font-black text-zinc-300 uppercase tracking-wider text-center bg-slate-900 py-1 rounded">2º Tempo</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <span className="block text-[8px] font-bold text-yellow-500 text-center uppercase">🟨 Amarelos</span>
+                        <input
+                          type="number"
+                          placeholder="Amarelos"
+                          value={cartoesAmarelos2t}
+                          onChange={(e) => setCartoesAmarelos2t(Math.max(0, parseInt(e.target.value) || 0))}
+                          className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black focus:outline-none focus:ring-1 focus:ring-yellow-500"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="block text-[8px] font-bold text-red-500 text-center uppercase">🟥 Vermelhos</span>
+                        <input
+                          type="number"
+                          placeholder="Vermelhos"
+                          value={cartoesVermelhos2t}
+                          onChange={(e) => setCartoesVermelhos2t(Math.max(0, parseInt(e.target.value) || 0))}
+                          className="w-full h-8 bg-slate-900 border border-slate-700 text-white rounded text-center text-xs font-black focus:outline-none focus:ring-1 focus:ring-red-500"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
