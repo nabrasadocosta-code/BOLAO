@@ -82,14 +82,14 @@ async function startServer() {
     const { name, phone, pin } = req.body;
 
     if (!name || !phone || !pin) {
-      return res.status(400).json({ error: "Nome, telefone e PIN de 4 dígitos são obrigatórios." });
+      return res.status(200).json({ success: false, error: "Nome, telefone e PIN de 4 dígitos são obrigatórios." });
     }
 
     const cleanPhone = phone.replace(/\D/g, "");
     const cleanPin = pin.replace(/\D/g, "");
 
     if (cleanPin.length !== 4) {
-      return res.status(400).json({ error: "O PIN deve conter exatamente 4 números." });
+      return res.status(200).json({ success: false, error: "O PIN deve conter exatamente 4 números." });
     }
 
     const db = readDb();
@@ -97,13 +97,13 @@ async function startServer() {
     // Validar se já existe um participante com esse mesmo nome
     const nameExists = db.users.some((u) => u.name.trim().toLowerCase() === name.trim().toLowerCase());
     if (nameExists) {
-      return res.status(400).json({ error: "Já existe um participante cadastrado com este nome completo. Adicione um sobrenome ou outra identificação para diferenciar." });
+      return res.status(200).json({ success: false, error: "Já existe um participante cadastrado com este nome completo. Adicione um sobrenome ou outra identificação para diferenciar." });
     }
 
     const existing = db.users.find((u) => u.phone.replace(/\D/g, "") === cleanPhone);
 
     if (existing) {
-      return res.status(400).json({ error: "Já existe uma conta registrada com este número de telefone." });
+      return res.status(200).json({ success: false, error: "Já existe uma conta registrada com este número de telefone." });
     }
 
     const newUser: User = {
@@ -133,7 +133,7 @@ async function startServer() {
     const { phone, pin } = req.body;
 
     if (!phone || !pin) {
-      return res.status(400).json({ error: "Telefone e PIN são obrigatórios." });
+      return res.status(200).json({ success: false, error: "Telefone e PIN são obrigatórios." });
     }
 
     const cleanPhone = phone.replace(/\D/g, "");
@@ -145,7 +145,7 @@ async function startServer() {
     );
 
     if (!user) {
-      return res.status(401).json({ error: "Telefone ou PIN incorretos." });
+      return res.status(200).json({ success: false, error: "Telefone ou PIN incorretos." });
     }
 
     res.json({

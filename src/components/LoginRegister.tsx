@@ -61,9 +61,16 @@ export default function LoginRegister({ onLoginSuccess }: LoginRegisterProps) {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        console.error("Erro ao converter resposta para JSON:", text);
+        throw new Error("Resposta inválida do servidor. Por favor, verifique os dados e tente novamente.");
+      }
 
-      if (!response.ok) {
+      if (!response.ok || data.success === false) {
         throw new Error(data.error || "Algo deu errado. Tente novamente.");
       }
 
@@ -182,21 +189,20 @@ export default function LoginRegister({ onLoginSuccess }: LoginRegisterProps) {
             />
           </div>
 
-          {/* PIN Access Display */}
-          <div className="space-y-2 mt-4">
-            <label className="block text-center text-xs font-black uppercase tracking-wider text-zinc-400 flex items-center justify-center gap-1.5">
+          {/* PIN Access Input */}
+          <div className="space-y-1.5 mt-4">
+            <label className="block text-xs font-black uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
               <KeyRound className="w-3.5 h-3.5 text-yellow-400" />
               Senha PIN (4 dígitos)
             </label>
 
-            {/* Visual Slots with actual text input */}
-            <div 
-              className="relative flex justify-center gap-4 py-2 cursor-pointer" 
-              onClick={() => document.getElementById('pin-hidden-input')?.focus()}
-            >
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <KeyRound className="h-4 w-4 text-zinc-500" />
+              </div>
               <input
-                id="pin-hidden-input"
-                type="text"
+                type="password"
+                required
                 maxLength={4}
                 inputMode="numeric"
                 pattern="[0-9]*"
@@ -206,29 +212,10 @@ export default function LoginRegister({ onLoginSuccess }: LoginRegisterProps) {
                   setPin(val);
                   setError(null);
                 }}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer text-transparent selection:bg-transparent"
-                style={{ fontSize: '16px' }}
+                placeholder="Digite seus 4 números"
+                className="block w-full pl-10 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 font-extrabold tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-yellow-400 text-lg text-center"
                 autoComplete="off"
               />
-
-              {[0, 1, 2, 3].map((index) => {
-                const isFocused = pin.length === index;
-                const hasValue = pin.length > index;
-                return (
-                  <div
-                    key={index}
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center border-2 transition-all duration-200 text-lg font-black ${
-                      hasValue
-                        ? 'bg-yellow-400 border-yellow-300 text-black scale-105 shadow-md shadow-yellow-500/25'
-                        : isFocused
-                        ? 'bg-slate-950 border-yellow-400 text-white shadow-inner shadow-yellow-400/10 scale-105'
-                        : 'bg-slate-950 border-slate-800 text-slate-700'
-                    }`}
-                  >
-                    {pin[index] || ''}
-                  </div>
-                );
-              })}
             </div>
           </div>
 
