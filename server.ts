@@ -93,6 +93,13 @@ async function startServer() {
     }
 
     const db = readDb();
+    
+    // Validar se já existe um participante com esse mesmo nome
+    const nameExists = db.users.some((u) => u.name.trim().toLowerCase() === name.trim().toLowerCase());
+    if (nameExists) {
+      return res.status(400).json({ error: "Já existe um participante cadastrado com este nome completo. Adicione um sobrenome ou outra identificação para diferenciar." });
+    }
+
     const existing = db.users.find((u) => u.phone.replace(/\D/g, "") === cleanPhone);
 
     if (existing) {

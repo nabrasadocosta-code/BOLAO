@@ -6,7 +6,6 @@
 import React, { useState } from 'react';
 import { User, Shield, AlertTriangle, KeyRound } from 'lucide-react';
 import PhoneMaskInput from './PhoneMaskInput';
-import Numpad from './Numpad';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface LoginRegisterProps {
@@ -23,22 +22,6 @@ export default function LoginRegister({ onLoginSuccess }: LoginRegisterProps) {
   
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  // Manipulação de PIN através do numpad
-  const handleNumpadPress = (num: string) => {
-    if (pin.length < 4) {
-      setPin((prev) => prev + num);
-      setError(null);
-    }
-  };
-
-  const handleNumpadDelete = () => {
-    setPin((prev) => prev.slice(0, -1));
-  };
-
-  const handleNumpadClear = () => {
-    setPin('');
-  };
 
   // Submissão do Formulário
   const handleSubmit = async (e: React.FormEvent) => {
@@ -206,20 +189,46 @@ export default function LoginRegister({ onLoginSuccess }: LoginRegisterProps) {
               Senha PIN (4 dígitos)
             </label>
 
-            {/* Visual Dot Codes */}
-            <div className="flex justify-center gap-4 py-2" id="pin-dots-display">
-              {[0, 1, 2, 3].map((index) => (
-                <div
-                  key={index}
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-all duration-200 ${
-                    pin.length > index
-                      ? 'bg-yellow-400 border-yellow-300 text-black font-extrabold text-lg scale-105 shadow-md shadow-yellow-500/25'
-                      : 'bg-slate-950 border-slate-800 text-slate-700'
-                  }`}
-                >
-                  {pin.length > index ? '●' : ''}
-                </div>
-              ))}
+            {/* Visual Slots with actual text input */}
+            <div 
+              className="relative flex justify-center gap-4 py-2 cursor-pointer" 
+              onClick={() => document.getElementById('pin-hidden-input')?.focus()}
+            >
+              <input
+                id="pin-hidden-input"
+                type="text"
+                maxLength={4}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={pin}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '');
+                  setPin(val);
+                  setError(null);
+                }}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer text-transparent selection:bg-transparent"
+                style={{ fontSize: '16px' }}
+                autoComplete="off"
+              />
+
+              {[0, 1, 2, 3].map((index) => {
+                const isFocused = pin.length === index;
+                const hasValue = pin.length > index;
+                return (
+                  <div
+                    key={index}
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center border-2 transition-all duration-200 text-lg font-black ${
+                      hasValue
+                        ? 'bg-yellow-400 border-yellow-300 text-black scale-105 shadow-md shadow-yellow-500/25'
+                        : isFocused
+                        ? 'bg-slate-950 border-yellow-400 text-white shadow-inner shadow-yellow-400/10 scale-105'
+                        : 'bg-slate-950 border-slate-800 text-slate-700'
+                    }`}
+                  >
+                    {pin[index] || ''}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -248,19 +257,6 @@ export default function LoginRegister({ onLoginSuccess }: LoginRegisterProps) {
             )}
           </button>
         </form>
-
-        {/* Numpad */}
-        <div className="border-t border-zinc-800/80 pt-4 mt-6">
-          <p className="text-center text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-2">
-            Digite seu PIN usando o teclado abaixo:
-          </p>
-          <Numpad
-            onKeyPress={handleNumpadPress}
-            onDelete={handleNumpadDelete}
-            onClear={handleNumpadClear}
-            disabled={loading}
-          />
-        </div>
       </div>
 
       {/* Note */}
