@@ -1,0 +1,6 @@
+{
+  "name": "Bolão Pier do Costa",
+  "description": "Aplicativo para gerenciar o bolão de futebol do bar Pier do Costa, permitindo palpites dos clientes, controle de pagamentos e ranking ao vivo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

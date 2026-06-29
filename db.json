@@ -1,0 +1,81 @@
+{
+  "users": [
+    {
+      "id": "admin-1",
+      "name": "Administrador Costa",
+      "phone": "11999999999",
+      "pin": "1234",
+      "isAdmin": true
+    },
+    {
+      "id": "user-demo-1",
+      "name": "Carlos Silva",
+      "phone": "11988888888",
+      "pin": "1111",
+      "isAdmin": false
+    },
+    {
+      "id": "user-demo-2",
+      "name": "Mariana Souza",
+      "phone": "11977777777",
+      "pin": "2222",
+      "isAdmin": false
+    }
+  ],
+  "matches": [
+    {
+      "id": "match-1",
+      "teamA": "Brasil",
+      "teamB": "Japão",
+      "matchDate": "2026-06-29T14:00:00.000Z",
+      "status": "open",
+      "realResults": null
+    }
+  ],
+  "bets": [
+    {
+      "id": "bet-demo-1",
+      "userId": "user-demo-1",
+      "userName": "Carlos Silva",
+      "matchId": "match-1",
+      "isPaid": true,
+      "placar1tA": 1,
+      "placar1tB": 0,
+      "placarFinalA": 2,
+      "placarFinalB": 1,
+      "autoresGols": ["Neymar", "Vinicius Jr"],
+      "craque": "Neymar",
+      "min1Gol": 15,
+      "escanteios1t": 4,
+      "escanteios2t": 5,
+      "cartoesAmarelos1t": 1,
+      "cartoesVermelhos1t": 0,
+      "cartoesAmarelos2t": 2,
+      "cartoesVermelhos2t": 0,
+      "pointsBreakdown": null,
+      "totalPoints": 0
+    },
+    {
+      "id": "bet-demo-2",
+      "userId": "user-demo-2",
+      "userName": "Mariana Souza",
+      "matchId": "match-1",
+      "isPaid": false,
+      "placar1tA": 0,
+      "placar1tB": 0,
+      "placarFinalA": 1,
+      "placarFinalB": 0,
+      "autoresGols": ["Vinicius Jr"],
+      "craque": "Vinicius Jr",
+      "min1Gol": 30,
+      "escanteios1t": 2,
+      "escanteios2t": 4,
+      "cartoesAmarelos1t": 2,
+      "cartoesVermelhos1t": 0,
+      "cartoesAmarelos2t": 1,
+      "cartoesVermelhos2t": 1,
+      "pointsBreakdown": null,
+      "totalPoints": 0
+    }
+  ]
+}
